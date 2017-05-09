@@ -1,0 +1,39 @@
+<%
+    masters      = scope.lookupvar('mysql_mmm::masters')
+    vips_readers = scope.lookupvar('mysql_mmm::vips_readers')
+-%>
+active_master_role	writer
+
+<host default>
+  cluster_interface     <%= scope.lookupvar('mysql_mmm::interface') %>
+  pid_path              /var/run/mmm_agentd.pid
+  bin_path              /usr/lib/mysql-mmm/
+  replication_user      <%= scope.lookupvar('mysql_mmm::replication_user') %>
+  replication_password  <%= scope.lookupvar('mysql_mmm::replication_password') %>
+  agent_user            <%= scope.lookupvar('mysql_mmm::agent_user') %>
+  agent_password        <%= scope.lookupvar('mysql_mmm::agent_password') %>
+</host>
+
+<host <%= masters['db1'] -%>>
+  ip                    <%= masters['ip1'] %> 
+  mode                  master
+  peer                  <%= masters['db2'] %>
+</host>
+
+<host <%= masters['db2'] -%>>
+  ip                    <%= masters['ip2'] %>
+  mode                  master
+  peer                  <%= masters['db1'] %>
+</host>
+
+<role writer>
+  hosts                 <%= masters['db1'] -%>, <%= masters['db2'] %>
+  ips                   <%= scope.lookupvar('mysql_mmm::vip_writer') %>
+  mode                  exclusive
+</role>
+
+<role reader>
+  hosts                 <%= masters['db1'] -%>, <%= masters['db2'] %>
+  ips                   <%= vips_readers[0] -%>, <%= vips_readers[1] %>
+  mode                  balanced
+</role>

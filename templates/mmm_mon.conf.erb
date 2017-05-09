@@ -1,0 +1,19 @@
+<%
+    ping_ips = scope.lookupvar('mysql_mmm::monitor::ping_ips')
+-%>
+include mmm_common.conf
+
+<monitor>
+  ip              <%= scope.lookupvar('mysql_mmm::monitor::ip') %>
+  pid_path        /var/run/mmm_mond.pid
+  bin_path        /usr/lib/mysql-mmm/
+  status_path     /var/lib/misc/mmm_mond.status
+  ping_ips        <%= ping_ips[0] -%>, <%= ping_ips[1] %>
+</monitor>
+
+<host default>
+  monitor_user      <%= scope.lookupvar('mysql_mmm::monitor::monitor_user') %>
+  monitor_password  <%= scope.lookupvar('mysql_mmm::monitor::monitor_password') %>
+</host>
+
+debug 0
